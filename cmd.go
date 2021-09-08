@@ -3,27 +3,12 @@ package main
 type Cmd string
 
 const (
-	// InsertEntity -
-	InsertEntityCmd Cmd = "InsertEntity"
+	// InsertUpdate -
+	InsertUpdateCmd Cmd = "InsertUpdate"
 
-	// InsertEntities -
-	InsertEntitiesCmd Cmd = "InsertEntities"
+	// Get -
+	GetCmd Cmd = "Get"
 
-	// UpdateEntity -
-	UpdateEntityCmd Cmd = "UpdateEntity"
-
-	// UpdateEntities -
-	UpdateEntitiesCmd Cmd = "UpdateEntities"
-
-	// GetEntity -
-	GetEntityCmd Cmd = "GetEntity"
-
-	// GetEntities -
-	GetEntitiesCmd Cmd = "GetEntities"
-
-	// DeleteEntity -
-	DeleteEntityCmd Cmd = "DeleteEntity"
-
-	// DeleteEntities -
-	DeleteEntitiesCmd Cmd = "DeleteEntities"
+	// Delete -
+	DeleteCmd Cmd = "Delete"
 )

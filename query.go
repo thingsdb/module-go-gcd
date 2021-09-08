@@ -7,11 +7,24 @@ import (
 	"cloud.google.com/go/datastore"
 )
 
-// InsertEntities inserts an new entity to the datastore,
+func execReq(ctx context.Context, client *datastore.Client, req *reqMySQL) (interface{}, error) {
+	switch cmd := req.Cmd; cmd {
+	case InsertUpdateCmd:
+		return insertEntities(ctx, client, req)
+	case GetCmd:
+		return getEntities(ctx, client, req)
+	case DeleteCmd:
+		return nil, deleteEntities(ctx, client, req)
+	default:
+		return nil, fmt.Errorf("Cmd parameter unknown; valid options are `InsertEntity`, `InsertEntities`, `UpdateEntity`, `UpdateEntities`, `GetEntity`, `GetEntities`, `DeleteEntity`, or `DeleteEntities`")
+	}
+}
+
+// insertEntities inserts an new entity to the datastore,
 // returning the key of the newly created entity.
 func insertEntities(ctx context.Context, client *datastore.Client, req *reqMySQL) ([]*datastore.Key, error) {
 	if len(req.Entities) < 1 {
-		return nil, fmt.Errorf("GCD InsertEntity requires `Entities`")
+		return nil, fmt.Errorf("GCD InsertEntities requires `Entities`")
 	}
 
 	cap := len(req.Entities)
@@ -34,10 +47,10 @@ func insertEntities(ctx context.Context, client *datastore.Client, req *reqMySQL
 		props = append(props, propertyList)
 	}
 
-	return client.PutMulti(ctx, keys, props)
+	return client.PutMulti(ctx, keys, props) // updates existing entities... ?
 }
 
-// GetEntities gets all the entities from the datastore.
+// getEntities gets entities from the datastore.
 func getEntities(ctx context.Context, client *datastore.Client, req *reqMySQL) (interface{}, error) {
 	var keys []*datastore.Key
 	var entities []Entity
@@ -62,23 +75,23 @@ func getEntities(ctx context.Context, client *datastore.Client, req *reqMySQL) (
 	}
 }
 
-func execReq(ctx context.Context, client *datastore.Client, req *reqMySQL) (interface{}, error) {
-	switch cmd := req.Cmd; cmd {
-	case InsertEntitiesCmd:
-		return insertEntities(ctx, client, req)
-	case UpdateEntityCmd:
-		return nil, fmt.Errorf("UpdateEntityCmd not implemented yet")
-	case UpdateEntitiesCmd:
-		return nil, fmt.Errorf("UpdateEntitiesCmd not implemented yet")
-	case GetEntitiesCmd:
-		return getEntities(ctx, client, req)
-	case DeleteEntityCmd:
-		return nil, fmt.Errorf("DeleteEntityCmd not implemented yet")
-	case DeleteEntitiesCmd:
-		return nil, fmt.Errorf("DeleteEntitiesCmd not implemented yet")
-	default:
-		return nil, fmt.Errorf("Cmd parameter unknown; valid options are `InsertEntity`, `InsertEntities`, `UpdateEntity`, `UpdateEntities`, `GetEntity`, `GetEntities`, `DeleteEntity`, or `DeleteEntities`")
+// deleteEntities deletes entities from the datastore.
+func deleteEntities(ctx context.Context, client *datastore.Client, req *reqMySQL) error {
+	if len(req.Entities) < 1 {
+		return fmt.Errorf("GCD DeleteEntities requires `Entities`")
 	}
+
+	cap := len(req.Entities)
+	keys := make([]*datastore.Key, 0, cap)
+	for _, entity := range req.Entities {
+		if entity.Key.Kind == "" {
+			return fmt.Errorf("GCD DeleteEntities requires `Kind`")
+		}
+
+		keys = append(keys, entity.Key)
+	}
+
+	return client.DeleteMulti(ctx, keys)
 }
 
 func query(ctx context.Context, client *datastore.Client, req *reqMySQL) ([]*datastore.Key, []Entity, error) {
