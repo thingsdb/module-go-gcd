@@ -13,53 +13,78 @@ new_module(
 
 future({
     module: 'GCD',
-    cmd: 'InsertEntities',
-    entities: [
-        {
-            key: {
-                ID: 3,
-                Namespace: 'test',
-                Kind: 'Test',
-                Parent: {
-                    Kind: 'Parent',
+    upsert: {
+        entities: [
+            {
+                key: {
                     ID: 3,
-                    Namespace: 'test'
-                }
-            },
-            properties: [
-                {
-                    Name: "age",
-                    Value: 6
-                }, {
-                    Name: "kind",
-                    Value: "dog"
-                }
-            ]
-        }
-    ],
+                    Namespace: 'test',
+                    Kind: 'Test',
+                    Parent: {
+                        Kind: 'Parent',
+                        ID: 3,
+                        Namespace: 'test'
+                    }
+                },
+                properties: [
+                    {
+                        Name: "age",
+                        Value: 6
+                    }, {
+                        Name: "kind",
+                        Value: "dog"
+                    }
+                ]
+            }
+        ],
+        kind: 'Test',
+        namespace: 'test',
+    },
     deep: 5
 
 }).then(|res| res);
 
 future({
     module: 'GCD',
-    cmd: 'GetEntities',
-    kind: 'Test',
-    namespace: 'test',
-    entities: [
-        {
-            key: {
-                ID: 3,
-                Namespace: "test",
-                Kind: 'Test',
-                Parent: {
-                    Kind: 'Parent',
+    get: {
+        entities: [
+            {
+                key: {
                     ID: 3,
-                    Namespace: 'test'
+                    Namespace: "test",
+                    Kind: 'Test',
+                    Parent: {
+                        Kind: 'Parent',
+                        ID: 3,
+                        Namespace: 'test'
+                    }
                 }
             }
-        }
-    ],
+        ],
+        kind: 'Test',
+        namespace: 'test',
+    },
+    deep: 5
+}).then(|res| res);
+
+future({
+    module: 'GCD',
+    delete: {
+        entities: [
+            {
+                key: {
+                    ID: 3,
+                    Namespace: "test",
+                    Kind: 'Test',
+                    Parent: {
+                        Kind: 'Parent',
+                        ID: 3,
+                        Namespace: 'test'
+                    }
+                }
+            }
+        ],
+    },
     deep: 5
 }).then(|res| res);
 ```

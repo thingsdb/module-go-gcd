@@ -41,16 +41,11 @@ type confMySQL struct {
 }
 
 type reqMySQL struct {
-	Cmd       Cmd      `msgpack:"cmd"`
-	Cursor    string   `msgpack:"cursor"`
-	Entities  []Entity `msgpack:"entities"`
-	Fetch     Fetch    `msgpack:"fetch"`
-	Filter    Filter   `msgpack:"filter"`
-	Kind      string   `msgpack:"kind"`
-	Limit     int      `msgpack:"limit"`
-	Namespace string   `msgpack:"namespace"`
-	Order     Order    `msgpack:"order"`
-	Timeout   int      `msgpack:"timeout"`
+	Delete      *Delete `msgpack:"delete"`
+	Get         *Get    `msgpack:"get"`
+	Upsert      *Upsert `msgpack:"upsert"`
+	Timeout     int     `msgpack:"timeout"`
+	Transaction bool    `msgpack:"transaction"`
 }
 
 func handleConf(config *confMySQL) {
@@ -87,6 +82,54 @@ func handleConf(config *confMySQL) {
 	timod.WriteConfOk()
 }
 
+// CHANGE ORDER ?????
+func handleTransactionReq(pkg *timod.Pkg, req *reqMySQL) {
+	if req.Timeout == 0 {
+		req.Timeout = 10
+	}
+
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
+	defer cancelfunc()
+
+	ret := make(map[string]interface{})
+	_, err := client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		if req.Upsert != nil {
+			upsertRet, err := req.Upsert.transactionUpsert(tx)
+			if err != nil {
+				return err
+			}
+			ret["upsert"] = upsertRet
+		}
+
+		if req.Get != nil {
+			getRet, err := req.Get.transactionGet(tx)
+			if err != nil {
+				return err
+			}
+			ret["get"] = getRet
+		}
+
+		if req.Delete != nil {
+			err := req.Delete.transactionDelete(tx)
+			if err != nil {
+				return err
+			}
+
+		}
+		return nil
+	})
+
+	if err != nil {
+		timod.WriteEx(
+			pkg.Pid,
+			timod.ExOperation,
+			err.Error())
+		return
+	}
+
+	timod.WriteResponse(pkg.Pid, ret)
+}
+
 func handleReq(pkg *timod.Pkg, req *reqMySQL) {
 	if req.Timeout == 0 {
 		req.Timeout = 10
@@ -95,13 +138,40 @@ func handleReq(pkg *timod.Pkg, req *reqMySQL) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
 	defer cancelfunc()
 
-	ret, err := execReq(ctx, client, req)
-	if err != nil {
-		timod.WriteEx(
-			pkg.Pid,
-			timod.ExOperation,
-			err.Error())
-		return
+	ret := make(map[string]interface{})
+	if req.Upsert != nil {
+		upsertRet, err := req.Upsert.upsert(ctx, client)
+		if err != nil {
+			timod.WriteEx(
+				pkg.Pid,
+				timod.ExOperation,
+				err.Error())
+			return
+		}
+		ret["upsert"] = upsertRet
+	}
+
+	if req.Get != nil {
+		getRet, err := req.Get.get(ctx, client)
+		if err != nil {
+			timod.WriteEx(
+				pkg.Pid,
+				timod.ExOperation,
+				err.Error())
+			return
+		}
+		ret["get"] = getRet
+	}
+
+	if req.Delete != nil {
+		err := req.Delete.delete(ctx, client)
+		if err != nil {
+			timod.WriteEx(
+				pkg.Pid,
+				timod.ExOperation,
+				err.Error())
+			return
+		}
 	}
 
 	timod.WriteResponse(pkg.Pid, ret)
@@ -129,15 +199,11 @@ func onModuleReq(pkg *timod.Pkg) {
 		return
 	}
 
-	if req.Cmd == "" {
-		timod.WriteEx(
-			pkg.Pid,
-			timod.ExBadData,
-			"Error: GCD requires `cmd`")
-		return
+	if req.Transaction {
+		handleTransactionReq(pkg, &req)
+	} else {
+		handleReq(pkg, &req)
 	}
-
-	handleReq(pkg, &req)
 }
 
 func handler(buf *timod.Buffer, quit chan bool) {
