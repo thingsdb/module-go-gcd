@@ -13,6 +13,72 @@ new_module(
 
 future({
     module: 'GCD',
+    query: {
+        cmd: 'upsert',
+        entities: [
+            {
+                key: {
+                    ID: 3,
+                    Namespace: 'test',
+                    Kind: 'Test',
+                    Parent: {
+                        Kind: 'Parent',
+                        ID: 3,
+                        Namespace: 'test'
+                    }
+                },
+                properties: [
+                    {
+                        Name: "age",
+                        Value: 6
+                    }, {
+                        Name: "kind",
+                        Value: "dog"
+                    }
+                ]
+            }
+        ],
+        kind: 'Test',
+        namespace: 'test',
+        next: {
+            cmd: 'get',
+            entities: [
+                {
+                    key: {
+                        ID: 3,
+                        Namespace: 'test',
+                        Kind: 'Test',
+                        Parent: {
+                            Kind: 'Parent',
+                            ID: 3,
+                            Namespace: 'test'
+                        }
+                    },
+                    properties: [
+                        {
+                            Name: "age",
+                            Value: 6
+                        }, {
+                            Name: "kind",
+                            Value: "dog"
+                        }
+                    ]
+                }
+            ],
+            kind: 'Test',
+            namespace: 'test',
+            next: {
+
+            }
+        }
+    },
+    deep: 5
+
+}).then(|res| res);
+
+
+future({
+    module: 'GCD',
     upsert: {
         entities: [
             {
