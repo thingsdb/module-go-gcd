@@ -1,6 +1,57 @@
 // package main
 
 // import (
+// 	"context"
+// 	"fmt"
+// 	"log"
+// 	"os"
+
+// 	"cloud.google.com/go/datastore"
+// )
+
+// func main() {
+// 	projID := os.Getenv("DATASTORE_PROJECT_ID")
+// 	if projID == "" {
+// 		log.Fatal(`You need to set the environment variable "DATASTORE_PROJECT_ID"`)
+// 	}
+// 	ctx := context.Background()
+// 	client, err := datastore.NewClient(ctx, projID)
+// 	if err != nil {
+// 		log.Fatalf("Could not create datastore client: %v", err)
+// 	}
+
+// 	// Increment a counter.
+// 	// See https://cloud.google.com/appengine/articles/sharding_counters for
+// 	// a more scalable solution.
+// 	type Counter struct {
+// 		Count int
+// 	}
+
+// 	var count int
+// 	key := datastore.NameKey("Counter", "singleton", nil)
+// 	_, err = client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+// 		var x Counter
+// 		if err := tx.Get(key, &x); err != nil && err != datastore.ErrNoSuchEntity {
+// 			return err
+// 		}
+// 		x.Count++
+// 		if _, err := tx.Put(key, &x); err != nil {
+// 			return err
+// 		}
+// 		count = x.Count
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		log.Fatalf("Error: %v", err)
+// 	}
+// 	// The value of count is only valid once the transaction is successful
+// 	// (RunInTransaction has returned nil).
+// 	fmt.Printf("Count=%d\n", count)
+// }
+
+// package main
+
+// import (
 // 	"bufio"
 // 	"context"
 // 	"fmt"
@@ -207,55 +258,119 @@ package main
 import (
 	"fmt"
 
+	"cloud.google.com/go/datastore"
 	"github.com/vmihailenco/msgpack/v4"
 )
 
-type Property struct {
-	Name    string      `msgpack:"name"`
-	Value   interface{} `msgpack:"value"`
-	NoIndex bool        `msgpack:"no_index"`
+// func init() {
+// 	msgpack.RegisterExt(1, (*key)(nil))
+// 	msgpack.RegisterExt(2, (*property)(nil))
+// }
+
+// var _ msgpack.Unmarshaler = (*key)(nil)
+// var _ msgpack.Unmarshaler = (*property)(nil)
+
+type key datastore.Key
+type property datastore.Property
+
+type entity struct {
+	Key        *key       `msgpack:"key"`
+	Properties []property `msgpack:"properties"`
 }
 
 type Entity struct {
-	// Ancestor   *datastore.Key `msgpack:"ancestor"`
-	ID         int64      `msgpack:"id"`
-	Name       string     `msgpack:"name"`
-	Properties []Property `msgpack:"properties"`
+	Key        *datastore.Key       `msgpack:"key"`
+	Properties []datastore.Property `msgpack:"properties"`
 }
+
+func (e *Entity) UnmarshalMsgpack(data []byte) error {
+	var ret entity
+	_ = msgpack.Unmarshal(data, &ret)
+	e.Key = (*datastore.Key)(ret.Key)
+	e.Properties = make([]datastore.Property, len(ret.Properties))
+	for i, p := range ret.Properties {
+		e.Properties[i] = datastore.Property(p)
+	}
+
+	return nil
+}
+
+func (k *key) UnmarshalMsgpack(data []byte) error {
+	var ret map[string]interface{}
+	_ = msgpack.Unmarshal(data, &ret)
+
+	ki, ok := ret["kind"].(string)
+	if ok {
+		k.Kind = ki
+	}
+	i, ok := ret["id"].(int64)
+	if ok {
+		k.ID = i
+	}
+	n, ok := ret["name"].(string)
+	if ok {
+		k.Name = n
+	}
+	p, ok := ret["parent"].(*datastore.Key)
+	if ok {
+		k.Parent = p
+	}
+	ns, ok := ret["namespace"].(string)
+	if ok {
+		k.Namespace = ns
+	}
+
+	return nil
+}
+
+func (p *property) UnmarshalMsgpack(data []byte) error {
+	var ret map[string]interface{}
+	_ = msgpack.Unmarshal(data, &ret)
+	n, ok := ret["name"].(string)
+	if ok {
+		p.Name = n
+	}
+	p.Value = ret["value"]
+	ni, ok := ret["no_index"].(bool)
+	if ok {
+		p.NoIndex = ni
+	}
+	return nil
+}
+
 type reqMySQL struct {
 	Cmd       string   `msgpack:"cmd"`
-	Cursor    string   `msgpack:"cursor"`
 	Entities  []Entity `msgpack:"entities"`
-	Fetch     string   `msgpack:"fetch"`
-	Ids       []int    `msgpack:"ids"`
 	Kind      string   `msgpack:"kind"`
-	Limit     int      `msgpack:"limit"`
 	Namespace string   `msgpack:"namespace"`
-	Timeout   int      `msgpack:"timeout"`
 }
 
 func main() {
-
 	e := map[string]interface{}{
-		"name":     "name",
-		"value":    "testname",
+		"name":     "testname",
+		"value":    "testvalue",
 		"no_index": false,
 	}
 	var s []map[string]interface{}
 	s = append(s, e)
 	s = append(s, e)
 	s = append(s, e)
+
+	k := map[string]interface{}{
+		"name":      "name",
+		"kind":      "testKind",
+		"id":        1,
+		"namespace": "testnamespace",
+	}
+
 	entity := map[string]interface{}{
-		"id":         123,
 		"properties": s,
-		"name":       "",
-		"ancestor":   "",
+		"key":        k,
 	}
 
 	var slice []map[string]interface{}
 	slice = append(slice, entity)
 	newmap := map[string]interface{}{
-		"module":    "GCD",
 		"cmd":       "InsertEntity",
 		"kind":      "Test",
 		"namespace": "test",
@@ -264,13 +379,13 @@ func main() {
 
 	b, err := msgpack.Marshal(newmap)
 	_ = err
-	fmt.Println(b)
 
 	var out reqMySQL
 	err = msgpack.Unmarshal(b, &out)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(out)
+
+	fmt.Println(out.Entities)
 
 }

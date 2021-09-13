@@ -31,10 +31,11 @@ func (query *Query) execQuery(ctx context.Context, client *datastore.Client) (in
 		}
 		ret["get"] = getRet
 	case DeleteCmd:
-		err := query.Delete.delete(ctx, client)
+		deleteRet, err := query.Delete.delete(ctx, client)
 		if err != nil {
 			return nil, err
 		}
+		ret["delete"] = deleteRet
 	default:
 		return ret, fmt.Errorf("Cmd parameter unknown; valid options are `upsert`, `get` or `delete`")
 	}
@@ -67,10 +68,11 @@ func (query *Query) execTransactionQuery(tx *datastore.Transaction) (interface{}
 		}
 		ret["get"] = getRet
 	case DeleteCmd:
-		err := query.Delete.transactionDelete(tx)
+		deleteRet, err := query.Delete.transactionDelete(tx)
 		if err != nil {
 			return nil, err
 		}
+		ret["delete"] = deleteRet
 	default:
 		return ret, fmt.Errorf("Cmd parameter unknown; valid options are `upsert`, `get` or `delete`")
 	}

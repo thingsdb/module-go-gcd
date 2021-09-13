@@ -12,23 +12,33 @@ type Delete struct {
 }
 
 // delete deletes entities from the datastore.
-func (delete *Delete) delete(ctx context.Context, client *datastore.Client) error {
+func (delete *Delete) delete(ctx context.Context, client *datastore.Client) (string, error) {
 	keys, err := delete.prepare()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return client.DeleteMulti(ctx, keys)
+	err = client.DeleteMulti(ctx, keys)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Removed %d entities", len(keys)), nil
 }
 
 // transactionDelete entities from the datastore.
-func (delete *Delete) transactionDelete(tx *datastore.Transaction) error {
+func (delete *Delete) transactionDelete(tx *datastore.Transaction) (string, error) {
 	keys, err := delete.prepare()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return tx.DeleteMulti(keys)
+	err = tx.DeleteMulti(keys)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Removed %d entities", len(keys)), nil
 }
 
 // prepare prepares the entities before delete.

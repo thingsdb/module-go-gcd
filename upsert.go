@@ -13,24 +13,34 @@ type Upsert struct {
 
 // upsert inserts an entities if they do not exist or updates them if they do.
 // Returns the keys.
-func (upsert *Upsert) upsert(ctx context.Context, client *datastore.Client) ([]*datastore.Key, error) {
+func (upsert *Upsert) upsert(ctx context.Context, client *datastore.Client) (string, error) {
 	keys, props, err := upsert.prepare()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return client.PutMulti(ctx, keys, props)
+	_, err = client.PutMulti(ctx, keys, props)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Upserted %d entities", len(keys)), nil
 }
 
 // transactionUpsert inserts an entities if they do not exist or updates them if they do.
 // Returns pending keys.
-func (upsert *Upsert) transactionUpsert(tx *datastore.Transaction) ([]*datastore.PendingKey, error) {
+func (upsert *Upsert) transactionUpsert(tx *datastore.Transaction) (string, error) {
 	keys, props, err := upsert.prepare()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return tx.PutMulti(keys, props)
+	_, err = tx.PutMulti(keys, props)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Upserted %d entities", len(keys)), nil
 }
 
 // prepare prepares the entities before upsert.
