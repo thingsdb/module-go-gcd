@@ -253,14 +253,14 @@
 // 	return cmd, args, n
 // }
 
-package main
+// package main
 
-import (
-	"fmt"
+// import (
+// 	"fmt"
 
-	"cloud.google.com/go/datastore"
-	"github.com/vmihailenco/msgpack/v4"
-)
+// 	"cloud.google.com/go/datastore"
+// 	"github.com/vmihailenco/msgpack/v4"
+// )
 
 // func init() {
 // 	msgpack.RegisterExt(1, (*key)(nil))
@@ -270,122 +270,122 @@ import (
 // var _ msgpack.Unmarshaler = (*key)(nil)
 // var _ msgpack.Unmarshaler = (*property)(nil)
 
-type key datastore.Key
-type property datastore.Property
+// type key datastore.Key
+// type property datastore.Property
 
-type entity struct {
-	Key        *key       `msgpack:"key"`
-	Properties []property `msgpack:"properties"`
-}
+// type entity struct {
+// 	Key        *key       `msgpack:"key"`
+// 	Properties []property `msgpack:"properties"`
+// }
 
-type Entity struct {
-	Key        *datastore.Key       `msgpack:"key"`
-	Properties []datastore.Property `msgpack:"properties"`
-}
+// type Entity struct {
+// 	Key        *datastore.Key       `msgpack:"key"`
+// 	Properties []datastore.Property `msgpack:"properties"`
+// }
 
-func (e *Entity) UnmarshalMsgpack(data []byte) error {
-	var ret entity
-	_ = msgpack.Unmarshal(data, &ret)
-	e.Key = (*datastore.Key)(ret.Key)
-	e.Properties = make([]datastore.Property, len(ret.Properties))
-	for i, p := range ret.Properties {
-		e.Properties[i] = datastore.Property(p)
-	}
+// func (e *Entity) UnmarshalMsgpack(data []byte) error {
+// 	var ret entity
+// 	_ = msgpack.Unmarshal(data, &ret)
+// 	e.Key = (*datastore.Key)(ret.Key)
+// 	e.Properties = make([]datastore.Property, len(ret.Properties))
+// 	for i, p := range ret.Properties {
+// 		e.Properties[i] = datastore.Property(p)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (k *key) UnmarshalMsgpack(data []byte) error {
-	var ret map[string]interface{}
-	_ = msgpack.Unmarshal(data, &ret)
+// func (k *key) UnmarshalMsgpack(data []byte) error {
+// 	var ret map[string]interface{}
+// 	_ = msgpack.Unmarshal(data, &ret)
 
-	ki, ok := ret["kind"].(string)
-	if ok {
-		k.Kind = ki
-	}
-	i, ok := ret["id"].(int64)
-	if ok {
-		k.ID = i
-	}
-	n, ok := ret["name"].(string)
-	if ok {
-		k.Name = n
-	}
-	p, ok := ret["parent"].(*datastore.Key)
-	if ok {
-		k.Parent = p
-	}
-	ns, ok := ret["namespace"].(string)
-	if ok {
-		k.Namespace = ns
-	}
+// 	ki, ok := ret["kind"].(string)
+// 	if ok {
+// 		k.Kind = ki
+// 	}
+// 	i, ok := ret["id"].(int64)
+// 	if ok {
+// 		k.ID = i
+// 	}
+// 	n, ok := ret["name"].(string)
+// 	if ok {
+// 		k.Name = n
+// 	}
+// 	p, ok := ret["parent"].(*datastore.Key)
+// 	if ok {
+// 		k.Parent = p
+// 	}
+// 	ns, ok := ret["namespace"].(string)
+// 	if ok {
+// 		k.Namespace = ns
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (p *property) UnmarshalMsgpack(data []byte) error {
-	var ret map[string]interface{}
-	_ = msgpack.Unmarshal(data, &ret)
-	n, ok := ret["name"].(string)
-	if ok {
-		p.Name = n
-	}
-	p.Value = ret["value"]
-	ni, ok := ret["no_index"].(bool)
-	if ok {
-		p.NoIndex = ni
-	}
-	return nil
-}
+// func (p *property) UnmarshalMsgpack(data []byte) error {
+// 	var ret map[string]interface{}
+// 	_ = msgpack.Unmarshal(data, &ret)
+// 	n, ok := ret["name"].(string)
+// 	if ok {
+// 		p.Name = n
+// 	}
+// 	p.Value = ret["value"]
+// 	ni, ok := ret["no_index"].(bool)
+// 	if ok {
+// 		p.NoIndex = ni
+// 	}
+// 	return nil
+// }
 
-type reqMySQL struct {
-	Cmd       string   `msgpack:"cmd"`
-	Entities  []Entity `msgpack:"entities"`
-	Kind      string   `msgpack:"kind"`
-	Namespace string   `msgpack:"namespace"`
-}
+// type reqMySQL struct {
+// 	Cmd       string   `msgpack:"cmd"`
+// 	Entities  []Entity `msgpack:"entities"`
+// 	Kind      string   `msgpack:"kind"`
+// 	Namespace string   `msgpack:"namespace"`
+// }
 
-func main() {
-	e := map[string]interface{}{
-		"name":     "testname",
-		"value":    "testvalue",
-		"no_index": false,
-	}
-	var s []map[string]interface{}
-	s = append(s, e)
-	s = append(s, e)
-	s = append(s, e)
+// func main() {
+// 	e := map[string]interface{}{
+// 		"name":     "testname",
+// 		"value":    "testvalue",
+// 		"no_index": false,
+// 	}
+// 	var s []map[string]interface{}
+// 	s = append(s, e)
+// 	s = append(s, e)
+// 	s = append(s, e)
 
-	k := map[string]interface{}{
-		"name":      "name",
-		"kind":      "testKind",
-		"id":        1,
-		"namespace": "testnamespace",
-	}
+// 	k := map[string]interface{}{
+// 		"name":      "name",
+// 		"kind":      "testKind",
+// 		"id":        1,
+// 		"namespace": "testnamespace",
+// 	}
 
-	entity := map[string]interface{}{
-		"properties": s,
-		"key":        k,
-	}
+// 	entity := map[string]interface{}{
+// 		"properties": s,
+// 		"key":        k,
+// 	}
 
-	var slice []map[string]interface{}
-	slice = append(slice, entity)
-	newmap := map[string]interface{}{
-		"cmd":       "InsertEntity",
-		"kind":      "Test",
-		"namespace": "test",
-		"entities":  slice,
-	}
+// 	var slice []map[string]interface{}
+// 	slice = append(slice, entity)
+// 	newmap := map[string]interface{}{
+// 		"cmd":       "InsertEntity",
+// 		"kind":      "Test",
+// 		"namespace": "test",
+// 		"entities":  slice,
+// 	}
 
-	b, err := msgpack.Marshal(newmap)
-	_ = err
+// 	b, err := msgpack.Marshal(newmap)
+// 	_ = err
 
-	var out reqMySQL
-	err = msgpack.Unmarshal(b, &out)
-	if err != nil {
-		fmt.Println(err)
-	}
+// 	var out reqMySQL
+// 	err = msgpack.Unmarshal(b, &out)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
 
-	fmt.Println(out.Entities)
+// 	fmt.Println(out.Entities)
 
-}
+// }

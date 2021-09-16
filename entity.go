@@ -8,6 +8,14 @@ import (
 type key datastore.Key
 type property datastore.Property
 
+type subKey struct {
+	Kind      string `msgpack:"kind"`
+	ID        int64  `msgpack:"id"`
+	Name      string `msgpack:"name"`
+	Parent    *key   `msgpack:"parent"`
+	Namespace string `msgpack:"namespace"`
+}
+
 type entity struct {
 	Key        *key       `msgpack:"key"`
 	Properties []property `msgpack:"properties"`
@@ -26,35 +34,18 @@ func (e *Entity) UnmarshalMsgpack(data []byte) error {
 	for i, p := range ret.Properties {
 		e.Properties[i] = datastore.Property(p)
 	}
-
 	return nil
 }
 
 func (k *key) UnmarshalMsgpack(data []byte) error {
-	var ret map[string]interface{}
+	var ret subKey
 	_ = msgpack.Unmarshal(data, &ret)
 
-	ki, ok := ret["kind"].(string)
-	if ok {
-		k.Kind = ki
-	}
-	i, ok := ret["id"].(int64)
-	if ok {
-		k.ID = i
-	}
-	n, ok := ret["name"].(string)
-	if ok {
-		k.Name = n
-	}
-	p, ok := ret["parent"].(*datastore.Key)
-	if ok {
-		k.Parent = p
-	}
-	ns, ok := ret["namespace"].(string)
-	if ok {
-		k.Namespace = ns
-	}
-
+	k.Kind = ret.Kind
+	k.ID = ret.ID
+	k.Name = ret.Name
+	k.Parent = (*datastore.Key)(ret.Parent)
+	k.Namespace = ret.Namespace
 	return nil
 }
 
