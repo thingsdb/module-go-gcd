@@ -67,42 +67,6 @@ new_module(
 future({
     module: 'GCD',
     query: {
-        cmd: "upsert",
-        upsert: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: 'test',
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test',
-                        }
-                    },
-                    properties: [
-                        {
-                            name: "age",
-                            value: 6
-                        }, {
-                            name: "kind",
-                            value: "dog"
-                        }
-                    ]
-                }
-            ]
-        }
-    },
-    deep: 10
-
-}).then(|res| res);
-```
-
-```ti
-future({
-    module: 'GCD',
-    query: {
         cmd: "get",
         get: {
             entities: [
@@ -125,32 +89,6 @@ future({
     },
     deep: 10
 
-}).then(|res| res);
-```
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: "delete",
-        delete: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: "test",
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test'
-                        }
-                    }
-                }
-            ],
-        },
-    },
-    deep: 5
 }).then(|res| res);
 ```
 
@@ -242,11 +180,76 @@ Argument | Type | Description
 
 ### Upsert
 
+```ti
+future({
+    module: 'GCD',
+    query: {
+        cmd: "upsert",
+        upsert: {
+            entities: [
+                {
+                    key: {
+                        id: 3,
+                        namespace: 'test',
+                        kind: 'Test',
+                        parent: {
+                            kind: 'Parent',
+                            id: 2,
+                            namespace: 'test',
+                        }
+                    },
+                    properties: [
+                        {
+                            name: "age",
+                            value: 6
+                        }, {
+                            name: "kind",
+                            value: "dog"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    deep: 10
+
+}).then(|res| res);
+```
+
 Argument | Type | Description
 -------- | ---- | -----------
 `entities` | `list with entities`| A list containing entities that should be either inserted or updated, see [Entity](#Entity).
 
 ### Get
+
+```ti
+future({
+    module: 'GCD',
+    query: {
+        cmd: "get",
+        get: {
+            entities: [
+                {
+                    key: {
+                        id: 3,
+                        namespace: 'test',
+                        kind: 'Test',
+                        parent: {
+                            kind: 'Parent',
+                            id: 2,
+                            namespace: 'test',
+                        }
+                    },
+                }
+            ],
+            kind: 'Test',
+            namespace: 'test',
+        },
+    },
+    deep: 10
+
+}).then(|res| res);
+```
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -259,6 +262,32 @@ Argument | Type | Description
 `order` | `Order` (optional) | Object with the `order` properties, see [Order](#Order).
 
 ### Delete
+
+```ti
+future({
+    module: 'GCD',
+    query: {
+        cmd: "delete",
+        delete: {
+            entities: [
+                {
+                    key: {
+                        id: 3,
+                        namespace: "test",
+                        kind: 'Test',
+                        parent: {
+                            kind: 'Parent',
+                            id: 2,
+                            namespace: 'test'
+                        }
+                    }
+                }
+            ],
+        },
+    },
+    deep: 5
+}).then(|res| res);
+```
 
 Argument | Type | Description
 -------- | ---- | -----------
