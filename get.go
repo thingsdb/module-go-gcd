@@ -8,7 +8,6 @@ import (
 )
 
 type Get struct {
-	Cursor    string   `msgpack:"cursor"`
 	Fetch     Fetch    `msgpack:"fetch"`
 	Filter    Filter   `msgpack:"filter"`
 	Entities  []Entity `msgpack:"entities"`
@@ -91,13 +90,13 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 		query = query.Limit(get.Limit)
 	}
 
-	if get.Cursor != "" {
-		cursor, err := datastore.DecodeCursor(get.Cursor)
-		if err != nil {
-			return nil, nil, err
-		}
-		query = query.Start(cursor)
-	}
+	// if get.Cursor != "" {
+	// 	cursor, err := datastore.DecodeCursor(get.Cursor)
+	// 	if err != nil {
+	// 		return nil, nil, err
+	// 	}
+	// 	query = query.Start(cursor)
+	// }
 
 	if get.Order.Name != "" {
 		query = query.Order(fmt.Sprintf("%s%s", get.Order.Direction, get.Order.Name))
