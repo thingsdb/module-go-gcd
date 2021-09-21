@@ -48,17 +48,6 @@ Argument | Type | Description
 `datastore_emulator_host` | `string` (optional) | Sets the DATASTORE_EMULATOR_HOST environment variable. The client will connect to a locally-running datastore emulator when this value is set.
 `google_app_cred_path` | `string` (optional) | Sets the path to the JSON key file for authorization.
 
-```ti
-new_module(
-    "GCD",
-    "module-go-gcd",
-    {
-        datastore_project_id: "id",
-        datastore_emulator_host: "localhost:8085"
-    }
-);
-```
-
 ## Using the module
 
 ### Request
@@ -87,7 +76,7 @@ future({
             namespace: 'test',
         },
     },
-    deep: 10
+    deep: 6
 
 }).then(|res| res);
 ```
@@ -165,7 +154,7 @@ future({
     },
     transaction: false,
     timeout: 10,
-    deep: 5
+    deep: 7
 
 }).then(|res| res);
 ```
@@ -211,7 +200,7 @@ future({
             ]
         }
     },
-    deep: 10
+    deep: 6
 
 }).then(|res| res);
 ```
@@ -246,7 +235,7 @@ future({
             namespace: 'test',
         },
     },
-    deep: 10
+    deep: 6
 
 }).then(|res| res);
 ```
@@ -285,7 +274,7 @@ future({
             ],
         },
     },
-    deep: 5
+    deep: 6
 }).then(|res| res);
 ```
 
