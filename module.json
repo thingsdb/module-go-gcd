@@ -16,9 +16,9 @@
         "query": {
             "doc": "Make a QUERY request; choose between insert, get or delete",
             "defaults": {
-                "transaction": false
+                "deep": 6
             },
-            "argmap": ["query"]
+            "argmap": ["query", "deep"]
         }
     }
 }
