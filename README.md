@@ -1,4 +1,5 @@
 # GCD ThingsDB Module (Go)
+
 GCD module written using the [Go language](https://golang.org). This module can be used to communicate with the Google Cloud Datastore
 
 ## Installation
@@ -52,198 +53,39 @@ Argument      | Type                | Description
 
 #### Example:
 
-
-
-## Using the module
-
-### Request
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: "get",
-        get: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
+```javascript
+gcd.query({
+    cmd: "get",
+    get: {
+        entities: [
+            {
+                key: {
+                    id: 3,
+                    namespace: 'test',
+                    kind: 'Test',
+                    parent: {
+                        kind: 'Parent',
+                        id: 2,
                         namespace: 'test',
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test',
-                        }
-                    },
-                }
-            ],
-            kind: 'Test',
-            namespace: 'test',
-        },
-    },
-    deep: 6
-
-}).then(|res| res);
-```
-
-Argument | Type | Description
--------- | ---- | -----------
-`module` | `string`| The module name.
-`query` | `Query` | Object with the query properties, see [Query](#Query).
-`timeout` | `integer` (optional) | Provide a custom timeout in seconds (Default: 10 seconds).
-`deep` | `integer` | The depth of the deepest object. Every object raises the depth one level. In the examples above the `parent` object is the deepest object and the deep should be 6.
-
-### Query
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: 'upsert',
-        upsert: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: 'test',
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test'
-                        }
-                    },
-                    properties: [
-                        {
-                            name: "age",
-                            value: 6
-                        }, {
-                            name: "kind",
-                            value: "dog"
-                        }
-                    ]
-                }
-            ],
-        },
-        next: {
-            cmd: 'get',
-            get: {
-                entities: [
-                    {
-                        key: {
-                            id: 3,
-                            namespace: 'test',
-                            kind: 'Test',
-                            parent: {
-                                kind: 'Parent',
-                                id: 2,
-                                namespace: 'test'
-                            }
-                        },
-                        properties: [
-                            {
-                                name: "age",
-                                value: 6
-                            }, {
-                                name: "kind",
-                                value: "dog"
-                            }
-                        ]
                     }
-                ],
-                kind: 'Test',
-                namespace: 'test',
+                },
             }
-        }
+        ],
+        kind: 'Test',
+        namespace: 'test',
     },
-    timeout: 10,
-    deep: 7
-
-}).then(|res| res);
+}).then(|res| {
+    res; // just return the response.
+});
 ```
 
-Argument | Type | Description
--------- | ---- | -----------
-`cmd` | `string`| The action name, which can be either `upsert`, `get` or `delete`.
-`upsert` | `Upsert` (optional) | Object with the `upsert` properties, see [Upsert](#Upsert).
-`get` | `Get` (optional) | Object with the `get` properties, see [Get](#Get).
-`delete` | `Delete` (optional) | Object with the `delete` properties, see [Delete](#Delete).
-`next` | `Query` (optional) | The next query object.
-`transaction` | `boolean` (optional) | Indicates if the query needs to be wrapped in a transaction or not.
-
-### Upsert
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: "upsert",
-        upsert: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: 'test',
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test',
-                        }
-                    },
-                    properties: [
-                        {
-                            name: "age",
-                            value: 6
-                        }, {
-                            name: "kind",
-                            value: "dog"
-                        }
-                    ]
-                }
-            ]
-        }
-    },
-    deep: 6
-
-}).then(|res| res);
-```
+#### Upsert
 
 Argument | Type | Description
 -------- | ---- | -----------
 `entities` | `list with entities`| A list containing entities that should be either inserted or updated, see [Entity](#Entity).
 
 ### Get
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: "get",
-        get: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: 'test',
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test',
-                        }
-                    },
-                }
-            ],
-            kind: 'Test',
-            namespace: 'test',
-        },
-    },
-    deep: 6
-
-}).then(|res| res);
-```
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -256,32 +98,6 @@ Argument | Type | Description
 `order` | `Order` (optional) | Object with the `order` properties, see [Order](#Order).
 
 ### Delete
-
-```ti
-future({
-    module: 'GCD',
-    query: {
-        cmd: "delete",
-        delete: {
-            entities: [
-                {
-                    key: {
-                        id: 3,
-                        namespace: "test",
-                        kind: 'Test',
-                        parent: {
-                            kind: 'Parent',
-                            id: 2,
-                            namespace: 'test'
-                        }
-                    }
-                }
-            ],
-        },
-    },
-    deep: 6
-}).then(|res| res);
-```
 
 Argument | Type | Description
 -------- | ---- | -----------
