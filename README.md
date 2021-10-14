@@ -1,52 +1,57 @@
-# module-go-gcd
-ThingsDB module for communication with the Google Cloud Datastore
+# GCD ThingsDB Module (Go)
+GCD module written using the [Go language](https://golang.org). This module can be used to communicate with the Google Cloud Datastore
 
-## Building the module
+## Installation
 
-To build the GCD module, make sure Go is installed and configured.
+Install the module by running the following command in the `@thingsdb` scope:
 
-First go to the module path and run the following command to install the module dependencies:
-
-```
-go mod tidy
+```javascript
+new_module('gcd', 'github.com/thingsdb/module-go-gcd');
 ```
 
-Next, you are ready to build the module:
+Optionally, you can choose a specific version by adding a `@` followed with the release tag. For example: `@v0.1.0`.
 
-```
-go build
-```
+## Configuration
 
-Copy the created binary file to the ThingsDB module path.
+The GCD module requires a configuration with the following properties:
 
-## Configure the module
+Property | Type            | Description
+-------- | --------------- | -----------
+datastore_project_id    | str (required)  | Project ID.
+datastore_emulator_host | str (optional)  | Host of locally-running datastore emulator.
+google_app_cred_path    | str (optional)  | Path to the JSON key file for authorization.
 
-The GCD module must be configured before it can be used.
+Example configuration:
 
-In this example we will name the module `GCD`. This name is arbitrary and can be anything you like.
-
-Run the following code in the `@thingsdb` scope:
-
-```ti
-// The values MUST be changed according to your situation
-new_module(
-    "GCD",
-    "module-go-gcd",
-    {
-        datastore_project_id: "id",
-        datastore_emulator_host: "host:port",
-        google_app_cred_path: "path/to/keyfile.json"
-    }
-);
+```javascript
+set_module_conf('siridb', {
+    datastore_project_id: 'id',
+    datastore_emulator_host: 'host:port',
+    google_app_cred_path: 'path/to/keyfile.json'
+});
 ```
 
-### Arguments
+## Exposed functions
 
-Argument | Type | Description
--------- | ---- | -----------
-`datastore_project_id` | `string` | Sets the project ID.
-`datastore_emulator_host` | `string` (optional) | Sets the DATASTORE_EMULATOR_HOST environment variable. The client will connect to a locally-running datastore emulator when this value is set.
-`google_app_cred_path` | `string` (optional) | Sets the path to the JSON key file for authorization.
+Name              | Description
+----------------- | -----------
+[query](#query)   | Run a GCD query.
+
+### Query
+
+#### Arguments
+
+Argument      | Type                | Description
+--------------|---------------------| -----------
+`cmd`         | `str` (required)    | The command which can be either `upsert`, `get` or `delete`.
+`delete`      | `Delete` (optional) | Thing with `delete` properties, see [Delete](#Delete).
+`get`         | `Get` (optional)    | Thing with `get` properties, see [Get](#Get).
+`next`        | `Query` (optional)  | The next query Thing.
+`transaction` | `bool` (optional)   | Indicates if the query needs to be wrapped in a transaction or not.
+`upsert`      | `Upsert` (optional) | Thing with the `upsert` properties, see [Upsert](#Upsert).
+
+#### Example:
+
 
 ## Using the module
 

@@ -80,55 +80,6 @@ func handleConf(config *confMySQL) {
 	timod.WriteConfOk()
 }
 
-func handleTransactionReq(pkg *timod.Pkg, req *reqMySQL) {
-	if req.Timeout == 0 {
-		req.Timeout = 10
-	}
-
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
-	defer cancelfunc()
-
-	var ret interface{}
-	_, err := client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-		var err error
-		ret, err = req.Query.execTransactionQuery(tx)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil {
-		timod.WriteEx(
-			pkg.Pid,
-			timod.ExOperation,
-			err.Error())
-		return
-	}
-
-	timod.WriteResponse(pkg.Pid, ret)
-}
-
-func handleReq(pkg *timod.Pkg, req *reqMySQL) {
-	if req.Timeout == 0 {
-		req.Timeout = 10
-	}
-
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
-	defer cancelfunc()
-
-	ret, err := req.Query.execQuery(ctx, client)
-	if err != nil {
-		timod.WriteEx(
-			pkg.Pid,
-			timod.ExOperation,
-			err.Error())
-		return
-	}
-
-	timod.WriteResponse(pkg.Pid, ret)
-}
-
 func onModuleReq(pkg *timod.Pkg) {
 	mux.Lock()
 	defer mux.Unlock()
@@ -151,11 +102,23 @@ func onModuleReq(pkg *timod.Pkg) {
 		return
 	}
 
-	if req.Transaction {
-		handleTransactionReq(pkg, &req)
-	} else {
-		handleReq(pkg, &req)
+	if req.Timeout == 0 {
+		req.Timeout = 10
 	}
+
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
+	defer cancelfunc()
+
+	ret, err := req.Query.query(ctx, client)
+	if err != nil {
+		timod.WriteEx(
+			pkg.Pid,
+			timod.ExOperation,
+			err.Error())
+		return
+	}
+
+	timod.WriteResponse(pkg.Pid, ret)
 }
 
 func handler(buf *timod.Buffer, quit chan bool) {

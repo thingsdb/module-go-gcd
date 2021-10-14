@@ -8,11 +8,32 @@ import (
 )
 
 type Query struct {
-	Cmd    Cmd     `msgpack:"cmd"`
-	Delete *Delete `msgpack:"delete"`
-	Get    *Get    `msgpack:"get"`
-	Upsert *Upsert `msgpack:"upsert"`
-	Next   *Query  `msgpack:"next"`
+	Cmd         Cmd     `msgpack:"cmd"`
+	Delete      *Delete `msgpack:"delete"`
+	Get         *Get    `msgpack:"get"`
+	Next        *Query  `msgpack:"next"`
+	Transaction bool    `msgpack:"transaction"`
+	Upsert      *Upsert `msgpack:"upsert"`
+}
+
+func (query *Query) query(ctx context.Context, client *datastore.Client) (interface{}, error) {
+	var ret interface{}
+	var err error
+
+	if query.Transaction {
+		_, err = client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+			var err error
+			ret, err = query.execTransactionQuery(tx)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+	} else {
+		ret, err = query.execQuery(ctx, client)
+	}
+
+	return ret, err
 }
 
 func (query *Query) execQuery(ctx context.Context, client *datastore.Client) (interface{}, error) {
