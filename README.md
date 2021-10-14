@@ -53,6 +53,7 @@ Argument      | Type                | Description
 #### Example:
 
 
+
 ## Using the module
 
 ### Request
@@ -90,7 +91,6 @@ Argument | Type | Description
 -------- | ---- | -----------
 `module` | `string`| The module name.
 `query` | `Query` | Object with the query properties, see [Query](#Query).
-`transaction` | `boolean` (optional) | Indicates if the query needs to be wrapped in a transaction or not.
 `timeout` | `integer` (optional) | Provide a custom timeout in seconds (Default: 10 seconds).
 `deep` | `integer` | The depth of the deepest object. Every object raises the depth one level. In the examples above the `parent` object is the deepest object and the deep should be 6.
 
@@ -157,7 +157,6 @@ future({
             }
         }
     },
-    transaction: false,
     timeout: 10,
     deep: 7
 
@@ -171,6 +170,7 @@ Argument | Type | Description
 `get` | `Get` (optional) | Object with the `get` properties, see [Get](#Get).
 `delete` | `Delete` (optional) | Object with the `delete` properties, see [Delete](#Delete).
 `next` | `Query` (optional) | The next query object.
+`transaction` | `boolean` (optional) | Indicates if the query needs to be wrapped in a transaction or not.
 
 ### Upsert
 
