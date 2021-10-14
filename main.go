@@ -41,9 +41,8 @@ type confMySQL struct {
 }
 
 type reqMySQL struct {
-	Query       *Query `msgpack:"query"`
-	Timeout     int    `msgpack:"timeout"`
-	Transaction bool   `msgpack:"transaction"`
+	Query   *Query `msgpack:"query"`
+	Timeout int    `msgpack:"timeout"`
 }
 
 func handleConf(config *confMySQL) {
@@ -108,6 +107,14 @@ func onModuleReq(pkg *timod.Pkg) {
 
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
 	defer cancelfunc()
+
+	if req.Query == nil {
+		timod.WriteEx(
+			pkg.Pid,
+			timod.ExOperation,
+			"Query parameter is required")
+		return
+	}
 
 	ret, err := req.Query.query(ctx, client)
 	if err != nil {
