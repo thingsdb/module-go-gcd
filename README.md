@@ -16,8 +16,8 @@ Optionally, you can choose a specific version by adding a `@` followed with the 
 
 The GCD module requires a configuration with the following properties:
 
-Property | Type            | Description
--------- | --------------- | -----------
+Property                | Type            | Description
+----------------------- | --------------- | -----------
 datastore_project_id    | str (required)  | Project ID.
 datastore_emulator_host | str (optional)  | Host of locally-running datastore emulator.
 google_app_cred_path    | str (optional)  | Path to the JSON key file for authorization.
@@ -38,18 +38,13 @@ Name              | Description
 ----------------- | -----------
 [query](#query)   | Run a GCD query.
 
-### Query
+### query
 
 #### Arguments
 
 Argument      | Type                | Description
 --------------|---------------------| -----------
-`cmd`         | `str` (required)    | The command which can be either `upsert`, `get` or `delete`.
-`delete`      | `Delete` (optional) | Thing with `delete` properties, see [Delete](#Delete).
-`get`         | `Get` (optional)    | Thing with `get` properties, see [Get](#Get).
-`next`        | `Query` (optional)  | The next query Thing.
-`transaction` | `bool` (optional)   | Indicates if the query needs to be wrapped in a transaction or not.
-`upsert`      | `Upsert` (optional) | Thing with the `upsert` properties, see [Upsert](#Upsert).
+`query`      | `Query` (required) | Thing with `query` properties, see [Query](#Query).
 
 #### Example:
 
@@ -79,13 +74,26 @@ gcd.query({
 });
 ```
 
-#### Upsert
+#### Types
+
+##### Query
+
+Argument      | Type                | Description
+--------------|---------------------| -----------
+`cmd`         | `str` (required)    | The command which can be either `upsert`, `get` or `delete`.
+`delete`      | `Delete` (optional) | Thing with `delete` properties, see [Delete](#Delete).
+`get`         | `Get` (optional)    | Thing with `get` properties, see [Get](#Get).
+`next`        | `Query` (optional)  | The next query Thing.
+`transaction` | `bool` (optional)   | Indicates if the query needs to be wrapped in a transaction or not.
+`upsert`      | `Upsert` (optional) | Thing with the `upsert` properties, see [Upsert](#Upsert).
+
+##### Upsert
 
 Argument | Type | Description
 -------- | ---- | -----------
 `entities` | `list with entities`| A list containing entities that should be either inserted or updated, see [Entity](#Entity).
 
-### Get
+##### Get
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -97,20 +105,20 @@ Argument | Type | Description
 `namespace` | `string` (optional) | A specific namespace.
 `order` | `Order` (optional) | Object with the `order` properties, see [Order](#Order).
 
-### Delete
+##### Delete
 
 Argument | Type | Description
 -------- | ---- | -----------
 `entities` | `list with entities`| A list containing entities that should be deleted, see [Entity](#Entity).
 
-### Entity
+##### Entity
 
 Argument | Type | Description
 -------- | ---- | -----------
 `key` | `Key` | Object with the `key` properties, see [Key](#Key).
 `properties` | `list with properties` | A list containing properties, see [Property](#Property).
 
-### Key
+##### Key
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -120,7 +128,7 @@ Argument | Type | Description
 `parent` | `Key` (optional) | The parent key.
 `namespace` | `string` (optional) | A specific namespace.
 
-### Property
+##### Property
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -128,14 +136,14 @@ Argument | Type | Description
 `value` | `any` | The property value.
 `no_index` | `boolean` | Whether the datastore cannot index this property.
 
-### Filter
+##### Filter
 
 Argument | Type | Description
 -------- | ---- | -----------
 `ancestor` | `Key` | Object with the `key` properties, see [Key](#Key).
 `properties` | `list of property filters` | A list containing property filters, see [PropertyFilter](#PropertyFilter).
 
-### PropertyFilter
+##### PropertyFilter
 
 Argument | Type | Description
 -------- | ---- | -----------
@@ -143,7 +151,7 @@ Argument | Type | Description
 `operator` | `string` | The operator which can be either `=`, `<`, `<=`, `>` or `>=`.
 `value` | `any` | The property value to compare.
 
-### Order
+##### Order
 
 Argument | Type | Description
 -------- | ---- | -----------
