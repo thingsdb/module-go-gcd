@@ -44,7 +44,8 @@ Name              | Description
 
 Argument      | Type                | Description
 --------------|---------------------| -----------
-`query`      | `Query` (required) | Thing with `query` properties, see [Query](#Query).
+`query`       | `Query` (required)  | Thing with `query` properties, see [Query](#Query).
+`deep`        | `int` (optional)    | Deep value of the thing with `query` properties.
 
 #### Example:
 
