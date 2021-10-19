@@ -132,7 +132,7 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 		}
 		// When printed, a cursor will display as a string that can be passed
 		// to datastore.DecodeCursor.
-		// fmt.Printf("to resume with this post, use cursor %s\n", cursor)
+		fmt.Printf("to resume with this post, use cursor %s\n", cursor)
 	}
 
 	// keys, err := client.GetAll(ctx, query, &propertyList)
