@@ -46,7 +46,7 @@ func (upsert *Upsert) transactionUpsert(tx *datastore.Transaction) (string, erro
 // prepare prepares the entities before upsert.
 func (upsert *Upsert) prepare() ([]*datastore.Key, []datastore.PropertyList, error) {
 	if len(upsert.Entities) < 1 {
-		return nil, nil, fmt.Errorf("GCD upsert requires `Entities`")
+		return nil, nil, errorMsg("`upsert` requires `entities`")
 	}
 
 	cap := len(upsert.Entities)
@@ -54,7 +54,7 @@ func (upsert *Upsert) prepare() ([]*datastore.Key, []datastore.PropertyList, err
 	props := make([]datastore.PropertyList, 0, cap)
 	for _, entity := range upsert.Entities {
 		if entity.Key.Kind == "" {
-			return nil, nil, fmt.Errorf("GCD upsert requires `Kind`")
+			return nil, nil, errorMsg("`upsert` requires `kind`")
 		}
 
 		var propertyList datastore.PropertyList

@@ -112,7 +112,7 @@ func onModuleReq(pkg *timod.Pkg) {
 		timod.WriteEx(
 			pkg.Pid,
 			timod.ExOperation,
-			"Error: Query parameter is required")
+			"Error: `query` argument is required")
 		return
 	}
 

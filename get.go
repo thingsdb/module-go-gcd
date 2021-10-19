@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"cloud.google.com/go/datastore"
+	"google.golang.org/api/iterator"
 )
 
 type Get struct {
+	Cursor    string   `msgpack:"cursor"`
 	Fetch     Fetch    `msgpack:"fetch"`
 	Filter    Filter   `msgpack:"filter"`
 	Entities  []Entity `msgpack:"entities"`
@@ -18,32 +20,36 @@ type Get struct {
 }
 
 // get gets entities from the datastore.
-func (get *Get) get(ctx context.Context, client *datastore.Client) (interface{}, error) {
+func (get *Get) get(ctx context.Context, client *datastore.Client) (interface{}, string, error) {
 	var keys []*datastore.Key
 	var entities []Entity
 	var err error
+	var cursor string
 	if len(get.Entities) > 0 {
 		keys, entities, err = get.queryByKeys(ctx, client)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	} else {
-		keys, entities, err = get.query(ctx, client)
+		keys, entities, cursor, err = get.query(ctx, client)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 
 	switch fetch := get.Fetch; fetch {
 	case Keys:
-		return keys, nil
+		return keys, cursor, nil
 	default:
-		return entities, nil
+		return entities, cursor, nil
 	}
 }
 
 // get gets entities from the datastore.
 func (get *Get) transactionGet(tx *datastore.Transaction) (interface{}, error) {
+	if len(get.Entities) == 0 {
+		return nil, errorMsg("`get` in transaction requires `entities`")
+	}
 	keys := make([]*datastore.Key, 0, len(get.Entities))
 	for _, entity := range get.Entities {
 		keys = append(keys, entity.Key)
@@ -67,9 +73,9 @@ func (get *Get) transactionGet(tx *datastore.Transaction) (interface{}, error) {
 	}
 }
 
-func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastore.Key, []Entity, error) {
+func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastore.Key, []Entity, string, error) {
 	if get.Kind == "" {
-		return nil, nil, fmt.Errorf("GCD get requires `Kind`")
+		return nil, nil, "", errorMsg("`get` requires `kind`")
 	}
 
 	query := datastore.NewQuery(get.Kind)
@@ -90,30 +96,56 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 		query = query.Limit(get.Limit)
 	}
 
-	// if get.Cursor != "" {
-	// 	cursor, err := datastore.DecodeCursor(get.Cursor)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-	// 	query = query.Start(cursor)
-	// }
+	if get.Cursor != "" {
+		cursor, err := datastore.DecodeCursor(get.Cursor)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		query = query.Start(cursor)
+	}
 
 	if get.Order.Name != "" {
 		query = query.Order(fmt.Sprintf("%s%s", get.Order.Direction, get.Order.Name))
 	}
 
 	var propertyList []datastore.PropertyList
-	keys, err := client.GetAll(ctx, query, &propertyList)
-	if err != nil {
-		return nil, nil, err
+	var keys []*datastore.Key
+	var cursor datastore.Cursor
+	it := client.Run(ctx, datastore.NewQuery("Post"))
+	for {
+		var p datastore.PropertyList
+		key, err := it.Next(&p)
+
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			break
+		}
+
+		propertyList = append(propertyList, p)
+		keys = append(keys, key)
+
+		cursor, err := it.Cursor()
+		if err != nil {
+			break
+		}
+		// When printed, a cursor will display as a string that can be passed
+		// to datastore.DecodeCursor.
+		fmt.Printf("to resume with this post, use cursor %s\n", cursor)
 	}
+
+	// keys, err := client.GetAll(ctx, query, &propertyList)
+	// if err != nil {
+	// 	return nil, nil, "", err
+	// }
 
 	entities, err := returnEntities(keys, propertyList)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, "", err
 	}
 
-	return keys, entities, nil
+	return keys, entities, cursor.String(), nil
 }
 
 func (get Get) queryByKeys(ctx context.Context, client *datastore.Client) ([]*datastore.Key, []Entity, error) {

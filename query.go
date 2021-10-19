@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/datastore"
 )
@@ -41,7 +40,7 @@ func (query *Query) execQuery(ctx context.Context, client *datastore.Client) (in
 	switch cmd := query.Cmd; cmd {
 	case UpsertCmd:
 		if query.Upsert == nil {
-			return nil, fmt.Errorf("Error: Upsert parameter is required")
+			return nil, errorMsg("`upsert` argument is required")
 		}
 		upsertRet, err := query.Upsert.upsert(ctx, client)
 		if err != nil {
@@ -50,16 +49,17 @@ func (query *Query) execQuery(ctx context.Context, client *datastore.Client) (in
 		ret["upsert"] = upsertRet
 	case GetCmd:
 		if query.Get == nil {
-			return nil, fmt.Errorf("Error: Get parameter is required")
+			return nil, errorMsg("`get` argument is required")
 		}
-		getRet, err := query.Get.get(ctx, client)
+		getRet, cursor, err := query.Get.get(ctx, client)
 		if err != nil {
 			return nil, err
 		}
 		ret["get"] = getRet
+		ret["cursor"] = cursor
 	case DeleteCmd:
 		if query.Delete == nil {
-			return nil, fmt.Errorf("Error: Delete parameter is required")
+			return nil, errorMsg("`delete` argument is required")
 		}
 		deleteRet, err := query.Delete.delete(ctx, client)
 		if err != nil {
@@ -67,7 +67,7 @@ func (query *Query) execQuery(ctx context.Context, client *datastore.Client) (in
 		}
 		ret["delete"] = deleteRet
 	default:
-		return ret, fmt.Errorf("Error: Cmd parameter unknown; valid options are `upsert`, `get` or `delete`")
+		return ret, errorMsg("`cmd` argument unknown; valid options are `upsert`, `get` or `delete`")
 	}
 
 	if query.Next != nil {
@@ -87,7 +87,7 @@ func (query *Query) execTransactionQuery(tx *datastore.Transaction) (interface{}
 	switch cmd := query.Cmd; cmd {
 	case UpsertCmd:
 		if query.Upsert == nil {
-			return nil, fmt.Errorf("Error: Upsert parameter is required")
+			return nil, errorMsg("`upsert` argument is required")
 		}
 		upsertRet, err := query.Upsert.transactionUpsert(tx)
 		if err != nil {
@@ -96,7 +96,7 @@ func (query *Query) execTransactionQuery(tx *datastore.Transaction) (interface{}
 		ret["upsert"] = upsertRet
 	case GetCmd:
 		if query.Get == nil {
-			return nil, fmt.Errorf("Error: Get parameter is required")
+			return nil, errorMsg("`get` argument is required")
 		}
 		getRet, err := query.Get.transactionGet(tx)
 		if err != nil {
@@ -105,7 +105,7 @@ func (query *Query) execTransactionQuery(tx *datastore.Transaction) (interface{}
 		ret["get"] = getRet
 	case DeleteCmd:
 		if query.Delete == nil {
-			return nil, fmt.Errorf("Error: Delete parameter is required")
+			return nil, errorMsg("`delete` argument is required")
 		}
 		deleteRet, err := query.Delete.transactionDelete(tx)
 		if err != nil {
@@ -113,7 +113,7 @@ func (query *Query) execTransactionQuery(tx *datastore.Transaction) (interface{}
 		}
 		ret["delete"] = deleteRet
 	default:
-		return ret, fmt.Errorf("Error: Cmd parameter unknown; valid options are `upsert`, `get` or `delete`")
+		return ret, errorMsg("`cmd` argument unknown; valid options are `upsert`, `get` or `delete`")
 	}
 
 	if query.Next != nil {

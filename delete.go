@@ -44,14 +44,14 @@ func (delete *Delete) transactionDelete(tx *datastore.Transaction) (string, erro
 // prepare prepares the entities before delete.
 func (delete *Delete) prepare() ([]*datastore.Key, error) {
 	if len(delete.Entities) < 1 {
-		return nil, fmt.Errorf("GCD delete requires `Entities`")
+		return nil, errorMsg("`delete` requires `entities`")
 	}
 
 	cap := len(delete.Entities)
 	keys := make([]*datastore.Key, 0, cap)
 	for _, entity := range delete.Entities {
 		if entity.Key.Kind == "" {
-			return nil, fmt.Errorf("GCD delete requires `Kind`")
+			return nil, errorMsg("`delete` requires `kind`")
 		}
 
 		keys = append(keys, entity.Key)
