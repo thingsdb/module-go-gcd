@@ -111,7 +111,7 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 	var propertyList []datastore.PropertyList
 	var keys []*datastore.Key
 	var cursor datastore.Cursor
-	it := client.Run(ctx, datastore.NewQuery("Post"))
+	it := client.Run(ctx, query)
 	for {
 		var p datastore.PropertyList
 		key, err := it.Next(&p)
