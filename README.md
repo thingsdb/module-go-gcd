@@ -25,7 +25,7 @@ google_app_cred_path    | str (optional)  | Path to the JSON key file for author
 Example configuration:
 
 ```javascript
-set_module_conf('siridb', {
+set_module_conf('gcd', {
     datastore_project_id: 'id',
     datastore_emulator_host: 'host:port',
     google_app_cred_path: 'path/to/keyfile.json'
