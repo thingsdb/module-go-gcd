@@ -126,13 +126,13 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 		propertyList = append(propertyList, p)
 		keys = append(keys, key)
 
-		cursor, err := it.Cursor()
+		cursor, err = it.Cursor()
 		if err != nil {
 			break
 		}
 		// When printed, a cursor will display as a string that can be passed
 		// to datastore.DecodeCursor.
-		fmt.Printf("to resume with this post, use cursor %s\n", cursor)
+		// fmt.Printf("to resume with this post, use cursor %s\n", cursor)
 	}
 
 	// keys, err := client.GetAll(ctx, query, &propertyList)
