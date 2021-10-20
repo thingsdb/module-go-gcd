@@ -1,7 +1,5 @@
 package main
 
-import "cloud.google.com/go/datastore"
-
 type Operator string
 
 const (
@@ -19,6 +17,5 @@ type PropertyFilter struct {
 }
 
 type Filter struct {
-	Ancestor   *datastore.Key   `msgpack:"ancestor"`
 	Properties []PropertyFilter `msgpack:"properties"`
 }

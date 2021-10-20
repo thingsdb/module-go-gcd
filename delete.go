@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/datastore"
 )
@@ -23,7 +22,8 @@ func (delete *Delete) run(ctx context.Context, client *datastore.Client) (interf
 		return "", err
 	}
 
-	return fmt.Sprintf("Removed %d entities", len(keys)), nil
+	num := len(keys)
+	return retMsg(num, "Deleted"), nil
 }
 
 // transactionDelete entities from the datastore.
@@ -38,7 +38,8 @@ func (delete *Delete) runInTransaction(tx *datastore.Transaction) (interface{}, 
 		return "", err
 	}
 
-	return fmt.Sprintf("Removed %d entities", len(keys)), nil
+	num := len(keys)
+	return retMsg(num, "Deleted"), nil
 }
 
 // prepare prepares the entities before delete.

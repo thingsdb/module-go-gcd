@@ -111,29 +111,29 @@ func onModuleReq(pkg *timod.Pkg) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
 	defer cancelfunc()
 
-	no := 0
+	num := 0
 	var fn func(ctx context.Context, client *datastore.Client) (interface{}, error)
 	if req.Get != nil {
 		fn = req.Get.run
-		no++
+		num++
 	}
 
 	if req.Delete != nil {
 		fn = req.Delete.run
-		no++
+		num++
 	}
 
 	if req.Upsert != nil {
 		fn = req.Upsert.run
-		no++
+		num++
 	}
 
 	if req.Transaction != nil {
 		fn = req.Transaction.run
-		no++
+		num++
 	}
 
-	if no == 0 {
+	if num == 0 {
 		timod.WriteEx(
 			pkg.Pid,
 			timod.ExOperation,
@@ -141,7 +141,7 @@ func onModuleReq(pkg *timod.Pkg) {
 		return
 	}
 
-	if no > 1 {
+	if num > 1 {
 		timod.WriteEx(
 			pkg.Pid,
 			timod.ExBadData,

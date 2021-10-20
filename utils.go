@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -16,4 +17,16 @@ func convInvalidInts(value interface{}) interface{} {
 	}
 
 	return value
+}
+
+func errorMsg(msg string) error {
+	return fmt.Errorf("Error: " + msg)
+}
+
+func retMsg(num int, title string) string {
+	label := "entities"
+	if num < 2 {
+		label = "entity"
+	}
+	return fmt.Sprintf("%s %d %s", title, num, label)
 }

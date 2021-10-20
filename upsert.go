@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/datastore"
 )
@@ -24,7 +23,8 @@ func (upsert *Upsert) run(ctx context.Context, client *datastore.Client) (interf
 		return "", err
 	}
 
-	return fmt.Sprintf("Upserted %d entities", len(keys)), nil
+	num := len(keys)
+	return retMsg(num, "Upserted"), nil
 }
 
 // transactionUpsert inserts an entities if they do not exist or updates them if they do.
@@ -40,7 +40,8 @@ func (upsert *Upsert) runInTransaction(tx *datastore.Transaction) (interface{}, 
 		return "", err
 	}
 
-	return fmt.Sprintf("Upserted %d entities", len(keys)), nil
+	num := len(keys)
+	return retMsg(num, "Upserted"), nil
 }
 
 // prepare prepares the entities before upsert.

@@ -28,7 +28,7 @@
             "argmap": ["get", "deep"]
         },
         "upsert": {
-            "doc": "Upsert entities from GCD",
+            "doc": "Upsert entities into GCD",
             "defaults": {
                 "deep": 6
             },

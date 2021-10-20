@@ -37,6 +37,10 @@ func (e *Entity) UnmarshalMsgpack(data []byte) error {
 	return nil
 }
 
+func (e *Entity) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(&e)
+}
+
 func (k *key) UnmarshalMsgpack(data []byte) error {
 	var ret subKey
 	_ = msgpack.Unmarshal(data, &ret)
@@ -47,6 +51,10 @@ func (k *key) UnmarshalMsgpack(data []byte) error {
 	k.Parent = (*datastore.Key)(ret.Parent)
 	k.Namespace = ret.Namespace
 	return nil
+}
+
+func (k *key) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(&k)
 }
 
 func (p *property) UnmarshalMsgpack(data []byte) error {
@@ -62,4 +70,8 @@ func (p *property) UnmarshalMsgpack(data []byte) error {
 		p.NoIndex = ni
 	}
 	return nil
+}
+
+func (p *property) MarshalMsgpack() ([]byte, error) {
+	return msgpack.Marshal(&p)
 }

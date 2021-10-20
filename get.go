@@ -9,14 +9,15 @@ import (
 )
 
 type Get struct {
-	Cursor    string   `msgpack:"cursor"`
-	Fetch     Fetch    `msgpack:"fetch"`
-	Filter    Filter   `msgpack:"filter"`
-	Entities  []Entity `msgpack:"entities"`
-	Kind      string   `msgpack:"kind"`
-	Limit     int      `msgpack:"limit"`
-	Namespace string   `msgpack:"namespace"`
-	Order     Order    `msgpack:"order"`
+	Ancestor  *datastore.Key `msgpack:"ancestor"`
+	Cursor    string         `msgpack:"cursor"`
+	Fetch     Fetch          `msgpack:"fetch"`
+	Filter    Filter         `msgpack:"filter"`
+	Entities  []Entity       `msgpack:"entities"`
+	Kind      string         `msgpack:"kind"`
+	Limit     int            `msgpack:"limit"`
+	Namespace string         `msgpack:"namespace"`
+	Order     Order          `msgpack:"order"`
 }
 
 // get gets entities from the datastore.
@@ -117,8 +118,8 @@ func (get Get) query() (*datastore.Query, error) {
 		query = query.Namespace(get.Namespace)
 	}
 
-	if get.Filter.Ancestor != nil {
-		query = query.Ancestor(get.Filter.Ancestor)
+	if get.Ancestor != nil {
+		query = query.Ancestor(get.Ancestor)
 	}
 
 	for _, filter := range get.Filter.Properties {

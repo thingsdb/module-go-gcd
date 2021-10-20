@@ -31,32 +31,32 @@ func (transaction *Transaction) run(ctx context.Context, client *datastore.Clien
 
 func (transaction *Transaction) execTransactionQuery(tx *datastore.Transaction) (interface{}, error) {
 	var fn func(tx *datastore.Transaction) (interface{}, error)
-	no := 0
+	num := 0
 	key := ""
 	ret := make(map[string]interface{})
 	if transaction.Get != nil {
 		fn = transaction.Get.runInTransaction
-		no++
+		num++
 		key = "get"
 	}
 
 	if transaction.Delete != nil {
 		fn = transaction.Delete.runInTransaction
-		no++
+		num++
 		key = "delete"
 	}
 
 	if transaction.Upsert != nil {
 		fn = transaction.Upsert.runInTransaction
-		no++
+		num++
 		key = "upsert"
 	}
 
-	if no == 0 {
+	if num == 0 {
 		return ret, errorMsg("GCD transaction requires either `get`, `delete`, `upsert`")
 	}
 
-	if no > 1 {
+	if num > 1 {
 		return ret, errorMsg("GCD transaction requires either `get`, `delete`, `upsert`, not more then one")
 	}
 
