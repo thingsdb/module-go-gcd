@@ -38,7 +38,7 @@ func (e *Entity) UnmarshalMsgpack(data []byte) error {
 }
 
 func (e *Entity) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(&e)
+	return msgpack.Marshal(e)
 }
 
 func (k *key) UnmarshalMsgpack(data []byte) error {
@@ -54,7 +54,7 @@ func (k *key) UnmarshalMsgpack(data []byte) error {
 }
 
 func (k *key) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(&k)
+	return msgpack.Marshal(k)
 }
 
 func (p *property) UnmarshalMsgpack(data []byte) error {
@@ -73,5 +73,5 @@ func (p *property) UnmarshalMsgpack(data []byte) error {
 }
 
 func (p *property) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(&p)
+	return msgpack.Marshal(p)
 }
