@@ -13,12 +13,33 @@
         "darwin/amd64": "bin/gcd_darwin_amd64.bin"
     },
     "exposes": {
-        "query": {
-            "doc": "Make a QUERY request; choose between insert, get or delete",
+        "delete": {
+            "doc": "Delete entities from GCD",
             "defaults": {
                 "deep": 6
             },
-            "argmap": ["query", "deep"]
+            "argmap": ["delete", "deep"]
+        },
+        "get": {
+            "doc": "Get entities from GCD",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["get", "deep"]
+        },
+        "upsert": {
+            "doc": "Upsert entities from GCD",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["upsert", "deep"]
+        },
+        "transaction": {
+            "doc": "Make a transaction request; provide a `delete`, `get` or `upsert` request and a `next` `delete`, `get` or `upsert` request",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["transaction", "deep"]
         }
     }
 }

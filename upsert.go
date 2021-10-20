@@ -13,7 +13,7 @@ type Upsert struct {
 
 // upsert inserts an entities if they do not exist or updates them if they do.
 // Returns the keys.
-func (upsert *Upsert) upsert(ctx context.Context, client *datastore.Client) (string, error) {
+func (upsert *Upsert) run(ctx context.Context, client *datastore.Client) (interface{}, error) {
 	keys, props, err := upsert.prepare()
 	if err != nil {
 		return "", err
@@ -29,7 +29,7 @@ func (upsert *Upsert) upsert(ctx context.Context, client *datastore.Client) (str
 
 // transactionUpsert inserts an entities if they do not exist or updates them if they do.
 // Returns pending keys.
-func (upsert *Upsert) transactionUpsert(tx *datastore.Transaction) (string, error) {
+func (upsert *Upsert) runInTransaction(tx *datastore.Transaction) (interface{}, error) {
 	keys, props, err := upsert.prepare()
 	if err != nil {
 		return "", err

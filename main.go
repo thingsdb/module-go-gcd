@@ -41,8 +41,11 @@ type confMySQL struct {
 }
 
 type reqMySQL struct {
-	Query   *Query `msgpack:"query"`
-	Timeout int    `msgpack:"timeout"`
+	Delete      *Delete      `msgpack:"delete"`
+	Get         *Get         `msgpack:"get"`
+	Upsert      *Upsert      `msgpack:"upsert"`
+	Transaction *Transaction `msgpack:"transaction"`
+	Timeout     int          `msgpack:"timeout"`
 }
 
 func handleConf(config *confMySQL) {
@@ -108,15 +111,45 @@ func onModuleReq(pkg *timod.Pkg) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Duration(req.Timeout)*time.Second)
 	defer cancelfunc()
 
-	if req.Query == nil {
+	no := 0
+	var fn func(ctx context.Context, client *datastore.Client) (interface{}, error)
+	if req.Get != nil {
+		fn = req.Get.run
+		no++
+	}
+
+	if req.Delete != nil {
+		fn = req.Delete.run
+		no++
+	}
+
+	if req.Upsert != nil {
+		fn = req.Upsert.run
+		no++
+	}
+
+	if req.Transaction != nil {
+		fn = req.Transaction.run
+		no++
+	}
+
+	if no == 0 {
 		timod.WriteEx(
 			pkg.Pid,
 			timod.ExOperation,
-			"Error: `query` argument is required")
+			"Error: GCD requires either `get`, `delete`, `upsert`, or `transaction`")
 		return
 	}
 
-	ret, err := req.Query.query(ctx, client)
+	if no > 1 {
+		timod.WriteEx(
+			pkg.Pid,
+			timod.ExBadData,
+			"Error: GCD requires either `get`, `delete`, `upsert`, or `transaction`, not more then one")
+		return
+	}
+
+	ret, err := fn(ctx, client)
 	if err != nil {
 		timod.WriteEx(
 			pkg.Pid,

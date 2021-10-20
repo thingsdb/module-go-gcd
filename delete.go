@@ -12,7 +12,7 @@ type Delete struct {
 }
 
 // delete deletes entities from the datastore.
-func (delete *Delete) delete(ctx context.Context, client *datastore.Client) (string, error) {
+func (delete *Delete) run(ctx context.Context, client *datastore.Client) (interface{}, error) {
 	keys, err := delete.prepare()
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func (delete *Delete) delete(ctx context.Context, client *datastore.Client) (str
 }
 
 // transactionDelete entities from the datastore.
-func (delete *Delete) transactionDelete(tx *datastore.Transaction) (string, error) {
+func (delete *Delete) runInTransaction(tx *datastore.Transaction) (interface{}, error) {
 	keys, err := delete.prepare()
 	if err != nil {
 		return "", err

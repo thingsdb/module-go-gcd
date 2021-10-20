@@ -20,33 +20,66 @@ type Get struct {
 }
 
 // get gets entities from the datastore.
-func (get *Get) get(ctx context.Context, client *datastore.Client) (interface{}, string, error) {
+func (get *Get) run(ctx context.Context, client *datastore.Client) (interface{}, error) {
+	var propertyList []datastore.PropertyList
 	var keys []*datastore.Key
-	var entities []Entity
-	var err error
-	var cursor string
+	var cursor datastore.Cursor
+
 	if len(get.Entities) > 0 {
-		keys, entities, err = get.queryByKeys(ctx, client)
-		if err != nil {
-			return nil, "", err
+		keys = make([]*datastore.Key, 0, len(get.Entities))
+		propertyList = make([]datastore.PropertyList, len(get.Entities)) // Need len otherwise hit `return errors.New("datastore: keys and dst slices have different length")``
+
+		for _, entity := range get.Entities {
+			keys = append(keys, entity.Key)
+		}
+
+		if err := client.GetMulti(ctx, keys, propertyList); err != nil {
+			return nil, err
 		}
 	} else {
-		keys, entities, cursor, err = get.query(ctx, client)
+		query, err := get.query()
 		if err != nil {
-			return nil, "", err
+			return nil, err
+		}
+
+		it := client.Run(ctx, query)
+		for {
+			var p datastore.PropertyList
+			key, err := it.Next(&p)
+
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+
+			propertyList = append(propertyList, p)
+			keys = append(keys, key)
+
+			cursor, err = it.Cursor()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
+	entities, err := returnEntities(keys, propertyList)
+	if err != nil {
+		return nil, err
+	}
+
+	var c = cursor.String()
 	switch fetch := get.Fetch; fetch {
 	case Keys:
-		return keys, cursor, nil
+		return []interface{}{keys, c}, nil
 	default:
-		return entities, cursor, nil
+		return []interface{}{entities, c}, nil
 	}
 }
 
 // get gets entities from the datastore.
-func (get *Get) transactionGet(tx *datastore.Transaction) (interface{}, error) {
+func (get *Get) runInTransaction(tx *datastore.Transaction) (interface{}, error) {
 	if len(get.Entities) == 0 {
 		return nil, errorMsg("`get` in transaction requires `entities`")
 	}
@@ -73,9 +106,9 @@ func (get *Get) transactionGet(tx *datastore.Transaction) (interface{}, error) {
 	}
 }
 
-func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastore.Key, []Entity, string, error) {
+func (get Get) query() (*datastore.Query, error) {
 	if get.Kind == "" {
-		return nil, nil, "", errorMsg("`get` requires `kind`")
+		return nil, errorMsg("`get` requires `kind`")
 	}
 
 	query := datastore.NewQuery(get.Kind)
@@ -99,7 +132,7 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 	if get.Cursor != "" {
 		cursor, err := datastore.DecodeCursor(get.Cursor)
 		if err != nil {
-			return nil, nil, "", err
+			return nil, err
 		}
 		query = query.Start(cursor)
 	}
@@ -108,63 +141,7 @@ func (get Get) query(ctx context.Context, client *datastore.Client) ([]*datastor
 		query = query.Order(fmt.Sprintf("%s%s", get.Order.Direction, get.Order.Name))
 	}
 
-	var propertyList []datastore.PropertyList
-	var keys []*datastore.Key
-	var cursor datastore.Cursor
-	it := client.Run(ctx, query)
-	for {
-		var p datastore.PropertyList
-		key, err := it.Next(&p)
-
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			break
-		}
-
-		propertyList = append(propertyList, p)
-		keys = append(keys, key)
-
-		cursor, err = it.Cursor()
-		if err != nil {
-			break
-		}
-		// When printed, a cursor will display as a string that can be passed
-		// to datastore.DecodeCursor.
-		fmt.Printf("to resume with this post, use cursor %s\n", cursor)
-	}
-
-	// keys, err := client.GetAll(ctx, query, &propertyList)
-	// if err != nil {
-	// 	return nil, nil, "", err
-	// }
-
-	entities, err := returnEntities(keys, propertyList)
-	if err != nil {
-		return nil, nil, "", err
-	}
-
-	return keys, entities, cursor.String(), nil
-}
-
-func (get Get) queryByKeys(ctx context.Context, client *datastore.Client) ([]*datastore.Key, []Entity, error) {
-	keys := make([]*datastore.Key, 0, len(get.Entities))
-	for _, entity := range get.Entities {
-		keys = append(keys, entity.Key)
-	}
-
-	propertyList := make([]datastore.PropertyList, len(get.Entities)) // Need len otherwise hit `return errors.New("datastore: keys and dst slices have different length")``
-	if err := client.GetMulti(ctx, keys, propertyList); err != nil {
-		return nil, nil, err
-	}
-
-	entities, err := returnEntities(keys, propertyList)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return keys, entities, nil
+	return query, nil
 }
 
 func returnEntities(keys []*datastore.Key, propertyList []datastore.PropertyList) ([]Entity, error) {
