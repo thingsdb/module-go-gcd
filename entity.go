@@ -16,6 +16,12 @@ type subKey struct {
 	Namespace string `msgpack:"namespace"`
 }
 
+type subProperty struct {
+	Name    string      `msgpack:"name"`
+	Value   interface{} `msgpack:"value"`
+	NoIndex bool        `msgpack:"no_index"`
+}
+
 type entity struct {
 	Key        *key       `msgpack:"key"`
 	Properties []property `msgpack:"properties"`
@@ -28,7 +34,11 @@ type Entity struct {
 
 func (e *Entity) UnmarshalMsgpack(data []byte) error {
 	var ret entity
-	_ = msgpack.Unmarshal(data, &ret)
+	err := msgpack.Unmarshal(data, &ret)
+	if err != nil {
+		return err
+	}
+
 	e.Key = (*datastore.Key)(ret.Key)
 	e.Properties = make([]datastore.Property, len(ret.Properties))
 	for i, p := range ret.Properties {
@@ -38,12 +48,23 @@ func (e *Entity) UnmarshalMsgpack(data []byte) error {
 }
 
 func (e *Entity) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(e)
+	var ret entity
+	ret.Key = (*key)(e.Key)
+
+	ret.Properties = make([]property, len(e.Properties))
+	for i, p := range e.Properties {
+		ret.Properties[i] = property(p)
+	}
+
+	return msgpack.Marshal(&ret)
 }
 
 func (k *key) UnmarshalMsgpack(data []byte) error {
 	var ret subKey
-	_ = msgpack.Unmarshal(data, &ret)
+	err := msgpack.Unmarshal(data, &ret)
+	if err != nil {
+		return err
+	}
 
 	k.Kind = ret.Kind
 	k.ID = ret.ID
@@ -54,24 +75,32 @@ func (k *key) UnmarshalMsgpack(data []byte) error {
 }
 
 func (k *key) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(k)
+	var ret subKey
+	ret.Kind = k.Kind
+	ret.ID = k.ID
+	ret.Name = k.Name
+	ret.Parent = (*key)(k.Parent)
+	ret.Namespace = k.Namespace
+	return msgpack.Marshal(&ret)
 }
 
 func (p *property) UnmarshalMsgpack(data []byte) error {
-	var ret map[string]interface{}
-	_ = msgpack.Unmarshal(data, &ret)
-	n, ok := ret["name"].(string)
-	if ok {
-		p.Name = n
+	var ret subProperty
+	err := msgpack.Unmarshal(data, &ret)
+	if err != nil {
+		return err
 	}
-	p.Value = ret["value"]
-	ni, ok := ret["no_index"].(bool)
-	if ok {
-		p.NoIndex = ni
-	}
+
+	p.Name = ret.Name
+	p.Value = ret.Value
+	p.NoIndex = ret.NoIndex
 	return nil
 }
 
 func (p *property) MarshalMsgpack() ([]byte, error) {
-	return msgpack.Marshal(p)
+	var ret subProperty
+	ret.Name = p.Name
+	ret.Value = p.Value
+	ret.NoIndex = p.NoIndex
+	return msgpack.Marshal(&ret)
 }
