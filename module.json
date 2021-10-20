@@ -1,0 +1,45 @@
+{
+    "doc": "https://github.com/thingsdb/module-go-gcd#readme",
+    "version": "0.1.0",
+    "main": {
+        "linux/386": "bin/gcd_linux_386.bin",
+        "linux/amd64": "bin/gcd_linux_amd64.bin",
+        "linux/arm": "bin/gcd_linux_arm.bin",
+        "linux/arm64": "bin/gcd_linux_arm64.bin",
+        "freebsd/386": "bin/gcd_freebsd_386.bin",
+        "freebsd/amd64": "bin/gcd_freebsd_amd64.bin",
+        "freebsd/arm": "bin/gcd_freebsd_arm.bin",
+        "freebsd/arm64": "bin/gcd_freebsd_arm64.bin",
+        "darwin/amd64": "bin/gcd_darwin_amd64.bin"
+    },
+    "exposes": {
+        "delete": {
+            "doc": "Delete entities from GCD",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["delete", "*"]
+        },
+        "get": {
+            "doc": "Get entities from GCD",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["get", "*"]
+        },
+        "upsert": {
+            "doc": "Upsert entities into GCD",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["upsert", "*"]
+        },
+        "transaction": {
+            "doc": "Make a transaction request; provide a `delete`, `get` or `upsert` request and a `next` request",
+            "defaults": {
+                "deep": 6
+            },
+            "argmap": ["transaction", "*"]
+        }
+    }
+}
