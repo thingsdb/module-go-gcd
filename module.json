@@ -18,28 +18,28 @@
             "defaults": {
                 "deep": 6
             },
-            "argmap": ["delete", "deep"]
+            "argmap": ["delete", "*"]
         },
         "get": {
             "doc": "Get entities from GCD",
             "defaults": {
                 "deep": 6
             },
-            "argmap": ["get", "deep"]
+            "argmap": ["get", "*"]
         },
         "upsert": {
             "doc": "Upsert entities into GCD",
             "defaults": {
                 "deep": 6
             },
-            "argmap": ["upsert", "deep"]
+            "argmap": ["upsert", "*"]
         },
         "transaction": {
-            "doc": "Make a transaction request; provide a `delete`, `get` or `upsert` request and a `next` `delete`, `get` or `upsert` request",
+            "doc": "Make a transaction request; provide a `delete`, `get` or `upsert` request and a `next` request",
             "defaults": {
                 "deep": 6
             },
-            "argmap": ["transaction", "deep"]
+            "argmap": ["transaction", "*"]
         }
     }
 }
