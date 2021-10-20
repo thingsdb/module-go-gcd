@@ -47,17 +47,17 @@ func (e *Entity) UnmarshalMsgpack(data []byte) error {
 	return nil
 }
 
-func (e *Entity) MarshalMsgpack() ([]byte, error) {
-	var ret entity
-	ret.Key = (*key)(e.Key)
+// func (e *Entity) MarshalMsgpack() ([]byte, error) {
+// 	var ret entity
+// 	ret.Key = (*key)(e.Key)
 
-	ret.Properties = make([]property, len(e.Properties))
-	for i, p := range e.Properties {
-		ret.Properties[i] = property(p)
-	}
+// 	ret.Properties = make([]property, len(e.Properties))
+// 	for i, p := range e.Properties {
+// 		ret.Properties[i] = property(p)
+// 	}
 
-	return msgpack.Marshal(&ret)
-}
+// 	return msgpack.Marshal(&ret)
+// }
 
 func (k *key) UnmarshalMsgpack(data []byte) error {
 	var ret subKey
@@ -74,15 +74,15 @@ func (k *key) UnmarshalMsgpack(data []byte) error {
 	return nil
 }
 
-func (k *key) MarshalMsgpack() ([]byte, error) {
-	var ret subKey
-	ret.Kind = k.Kind
-	ret.ID = k.ID
-	ret.Name = k.Name
-	ret.Parent = (*key)(k.Parent)
-	ret.Namespace = k.Namespace
-	return msgpack.Marshal(&ret)
-}
+// func (k *key) MarshalMsgpack() ([]byte, error) {
+// 	var ret subKey
+// 	ret.Kind = k.Kind
+// 	ret.ID = k.ID
+// 	ret.Name = k.Name
+// 	ret.Parent = (*key)(k.Parent)
+// 	ret.Namespace = k.Namespace
+// 	return msgpack.Marshal(&ret)
+// }
 
 func (p *property) UnmarshalMsgpack(data []byte) error {
 	var ret subProperty
@@ -97,10 +97,10 @@ func (p *property) UnmarshalMsgpack(data []byte) error {
 	return nil
 }
 
-func (p *property) MarshalMsgpack() ([]byte, error) {
-	var ret subProperty
-	ret.Name = p.Name
-	ret.Value = p.Value
-	ret.NoIndex = p.NoIndex
-	return msgpack.Marshal(&ret)
-}
+// func (p *property) MarshalMsgpack() ([]byte, error) {
+// 	var ret subProperty
+// 	ret.Name = p.Name
+// 	ret.Value = p.Value
+// 	ret.NoIndex = p.NoIndex
+// 	return msgpack.Marshal(&ret)
+// }
