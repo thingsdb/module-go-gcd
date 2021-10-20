@@ -58,6 +58,10 @@ func (upsert *Upsert) prepare() ([]*datastore.Key, []datastore.PropertyList, err
 			return nil, nil, errorMsg("`upsert` requires `kind`")
 		}
 
+		if entity.Key.ID != 0 && entity.Key.Name != "" {
+			return nil, nil, errorMsg("`key` requires either `id` or `name`, not both")
+		}
+
 		var propertyList datastore.PropertyList
 		propertySlice := make([]datastore.Property, 0, len(entity.Properties))
 		for _, prop := range entity.Properties {

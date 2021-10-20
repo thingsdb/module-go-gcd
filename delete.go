@@ -55,6 +55,14 @@ func (delete *Delete) prepare() ([]*datastore.Key, error) {
 			return nil, errorMsg("`delete` requires `kind`")
 		}
 
+		if entity.Key.ID == 0 && entity.Key.Name == "" {
+			return nil, errorMsg("`key` requires either `id` or `name`")
+		}
+
+		if entity.Key.ID != 0 && entity.Key.Name != "" {
+			return nil, errorMsg("`key` requires either `id` or `name`, not both")
+		}
+
 		keys = append(keys, entity.Key)
 	}
 

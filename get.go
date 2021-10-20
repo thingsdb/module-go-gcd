@@ -27,12 +27,7 @@ func (get *Get) run(ctx context.Context, client *datastore.Client) (interface{},
 	var cursor datastore.Cursor
 
 	if len(get.Entities) > 0 {
-		keys = make([]*datastore.Key, 0, len(get.Entities))
-		propertyList = make([]datastore.PropertyList, len(get.Entities)) // Need len otherwise hit `return errors.New("datastore: keys and dst slices have different length")``
-
-		for _, entity := range get.Entities {
-			keys = append(keys, entity.Key)
-		}
+		keys, propertyList = get.prepare()
 
 		if err := client.GetMulti(ctx, keys, propertyList); err != nil {
 			return nil, err
@@ -81,15 +76,12 @@ func (get *Get) run(ctx context.Context, client *datastore.Client) (interface{},
 
 // get gets entities from the datastore.
 func (get *Get) runInTransaction(tx *datastore.Transaction) (interface{}, error) {
-	if len(get.Entities) == 0 {
+	if len(get.Entities) < 1 {
 		return nil, errorMsg("`get` in transaction requires `entities`")
 	}
-	keys := make([]*datastore.Key, 0, len(get.Entities))
-	for _, entity := range get.Entities {
-		keys = append(keys, entity.Key)
-	}
 
-	propertyList := make([]datastore.PropertyList, len(get.Entities)) // Need len otherwise hit `return errors.New("datastore: keys and dst slices have different length")``
+	keys, propertyList := get.prepare()
+
 	if err := tx.GetMulti(keys, propertyList); err != nil {
 		return nil, err
 	}
@@ -105,6 +97,18 @@ func (get *Get) runInTransaction(tx *datastore.Transaction) (interface{}, error)
 	default:
 		return entities, nil
 	}
+}
+
+// prepare prepares the entities.
+func (get *Get) prepare() ([]*datastore.Key, []datastore.PropertyList) {
+	keys := make([]*datastore.Key, 0, len(get.Entities))
+	propertyList := make([]datastore.PropertyList, len(get.Entities)) // Need len otherwise hit `return errors.New("datastore: keys and dst slices have different length")``
+
+	for _, entity := range get.Entities {
+		keys = append(keys, entity.Key)
+	}
+
+	return keys, propertyList
 }
 
 func (get Get) query() (*datastore.Query, error) {
